@@ -1,5 +1,6 @@
 #include "main.h"
 #include "stm32f0xx_hal.h"
+#include <assert.h>
 
 void SystemClock_Config(void);
 
@@ -21,6 +22,36 @@ int main(void)
 
   HAL_GPIO_Init(GPIOC, &initStr);                     // Initialize pins PC8 & PC9
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); // Start PC8 high
+
+  /* ~~~ASSIGNMENT 1.1~~~:
+  - GPIOC_MODEr bits to change:
+  PC6: bits 13/12 to 10
+  PC7: bits 15/14 to 10
+  PC8: bits 17/16 to 10
+  PC9: bits 19/18 to 10
+
+  - GPIOA_MODEr bits to change:
+  PA0 to GP Out: bits 0/1 to 00
+   */
+
+  /* ~~~ASSIGNMENT 1.2~~~:
+  - LED Pin setting PC6/7/8/9 to Low-speed push-pull with no pullups:
+    * GPIOC_OTYPER: bits 6/7/8/9 to 0 for Push-Pull
+    * GPIOC_OSPEEDR: bits (12,13) (14,15) (16,17) (18,19) each set to 00 for Low-Speed (technically
+      x0)
+    * GPIOC_PUPDR: bits (12,13) (14,15) (16,17) (18,19) each set to 00 for No-Pullup-No-Pulldown
+
+  - Setting USER button:
+  * GPIOA_OSPEEDR: bits (0,1) to 00 for Low-Speed (or x0)
+    * GPIOA_PUPDR: bit (0,1) to 10 for Pull-Down
+   */
+
+  // ~~~ASSIGNMENT 1.3~~~
+  uint32_t GPIOC_MODER_EXP = (0b01 << 2 * 8) | (0b01 << 2 * 9);
+  assert(GPIOC->MODER == GPIOC_MODER_EXP);
+
+  // static_assert(1 == 0);
+
   while (1)
   {
     HAL_Delay(200); // Delay 200ms
