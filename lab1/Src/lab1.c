@@ -47,10 +47,12 @@ int main(void)
    */
 
   // ~~~ASSIGNMENT 1.3~~~
+  // PC8/9 are in output mode
   uint32_t GPIOC_MODER_EXP = (0b01 << 2 * 8) | (0b01 << 2 * 9);
   assert(GPIOC->MODER == GPIOC_MODER_EXP);
 
-  // static_assert(1 == 0);
+  // PC pullups aren't being used
+  assert(GPIOC->PUPDR == 0);
 
   while (1)
   {
