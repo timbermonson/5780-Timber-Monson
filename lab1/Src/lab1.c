@@ -54,6 +54,10 @@ int main(void)
   // PC pullups aren't being used
   assert(GPIOC->PUPDR == 0);
 
+  // Starts with PC8 turned on
+  uint32_t GPIOC_ODR_EXP = 1 << 8;
+  assert(GPIOC->ODR == GPIOC_ODR_EXP);
+
   while (1)
   {
     HAL_Delay(200); // Delay 200ms
