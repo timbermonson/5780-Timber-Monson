@@ -20,10 +20,11 @@ int main(void)
   GPIO_InitTypeDef initStr = {
       GPIO_PIN_8 | GPIO_PIN_9, GPIO_MODE_OUTPUT_PP, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL};
 
-  HAL_GPIO_Init(GPIOC, &initStr);                     // Initialize pins PC8 & PC9
+  // HAL_GPIO_Init(GPIOC, &initStr);                     // Initialize pins PC8 & PC9
+  My_HAL_GPIO_Init(GPIOC, &initStr);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); // Start PC8 high
 
-  /* ~~~ASSIGNMENT 1.1~~~:
+  /* ~~~Exercise 1.1~~~:
   - GPIOC_MODEr bits to change:
   PC6: bits 13/12 to 10
   PC7: bits 15/14 to 10
@@ -34,7 +35,7 @@ int main(void)
   PA0 to GP Out: bits 0/1 to 00
    */
 
-  /* ~~~ASSIGNMENT 1.2~~~:
+  /* ~~~Execise 1.2~~~:
   - LED Pin setting PC6/7/8/9 to Low-speed push-pull with no pullups:
     * GPIOC_OTYPER: bits 6/7/8/9 to 0 for Push-Pull
     * GPIOC_OSPEEDR: bits (12,13) (14,15) (16,17) (18,19) each set to 00 for Low-Speed (technically
@@ -46,7 +47,7 @@ int main(void)
     * GPIOA_PUPDR: bit (0,1) to 10 for Pull-Down
    */
 
-  // ~~~ASSIGNMENT 1.3~~~
+  // ~~~Exercise 1.3~~~
   // PC8/9 are in output mode
   uint32_t GPIOC_MODER_EXP = (0b01 << 2 * 8) | (0b01 << 2 * 9);
   assert(GPIOC->MODER == GPIOC_MODER_EXP);
