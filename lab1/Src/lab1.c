@@ -24,7 +24,7 @@ int main(void)
 
   // HAL_GPIO_Init(GPIOC, &initStr);                     // Initialize pins PC8 & PC9
   My_HAL_GPIO_Init(GPIOC, &initStr);
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); // Start PC8 high
+  My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); // Start PC8 high
 
   /* ~~~Exercise 1.1~~~:
   - GPIOC_MODEr bits to change:

@@ -32,14 +32,32 @@ GPIO_PinState My_HAL_GPIO_ReadPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 }
 */
 
-/*
-void My_HAL_GPIO_WritePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState)
+void My_HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState)
 {
+  // Use BSRR to set state atomically
+  if (PinState == GPIO_PIN_SET)
+  {
+    GPIOx->BSRR = GPIO_Pin;
+  }
+  else
+  {
+    // "Resetting" in the BSRR means writing "1" to a 16-offset position.
+    GPIOx->BSRR = (GPIO_Pin << 16);
+  }
 }
-*/
 
-/*
-void My_HAL_GPIO_TogglePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
+void My_HAL_GPIO_TogglePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
 {
+  // Get current state
+  GPIO_PinState state = (GPIOx->ODR >> GPIO_Pin) & 1;
+
+  // Set to opposite state
+  if (state == GPIO_PIN_SET)
+  {
+    My_HAL_GPIO_WritePin(GPIOx, GPIO_Pin, 0);
+  }
+  else
+  {
+    My_HAL_GPIO_WritePin(GPIOx, GPIO_Pin, 1);
+  }
 }
-*/
