@@ -23,9 +23,8 @@ int main(void)
   GPIO_InitTypeDef initStr = {
       GPIO_PIN_8 | GPIO_PIN_9, GPIO_MODE_OUTPUT_PP, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL};
 
-  // HAL_GPIO_Init(GPIOC, &initStr); // Initialize pins PC8 & PC9
   My_HAL_GPIO_Init(GPIOC, &initStr);
-  My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Start PC8 high
+  My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Start PC6 high
 
   /* ~~~Exercise 1.1~~~:
   - GPIOC_MODEr bits to change:
