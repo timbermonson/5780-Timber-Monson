@@ -4,31 +4,19 @@
 
 void My_HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 {
-  int startPin = 6;
-  int endPin = 9;
-  uint32_t MODER_SET = 0;
-  uint32_t OTYPER_SET = 0;
-  uint32_t OSPEEDR_SET = 0;
-  uint32_t PUPDR_SET = 0;
-
   // Set pins 6 thru 9 to "General Output"
-  for (int i = startPin; i <= endPin; i++)
+  for (int i = 8; i <= 9; i++)
   {
-    MODER_SET = (0b01 << 2 * i);
+    GPIOx->MODER |= (0b01 << 2 * i);
 
-    // OTYPER_SET = // Unneeded, only need to set 0, which is the reset state
-    // OSPEEDR_SET = // Same as above
-    // PUPDR_SET_SET = // Same as above
+    GPIOx->OTYPER &= ~(0b1 << i);
+    GPIOx->OSPEEDR &= ~(0b11 << 2 * i);
+    GPIOx->PUPDR &= ~(0b11 << 2 * i);
   }
 
-  GPIOx->MODER = MODER_SET;
-  GPIOx->OTYPER = OTYPER_SET;
-  GPIOx->OSPEEDR = OSPEEDR_SET;
-  GPIOx->PUPDR = PUPDR_SET;
-
-  GPIOA->MODER &= !(0b00 << 0);
-  GPIOA->OSPEEDR &= !(0b00 << 0);
-  GPIOA->PUPDR &= !(0b10 << 0);
+  GPIOA->MODER &= ~(0b11 << 0);
+  GPIOA->OSPEEDR &= ~(0b11 << 0);
+  GPIOA->PUPDR &= ~(0b10 << 0);
 }
 
 /*
