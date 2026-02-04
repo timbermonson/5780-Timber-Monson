@@ -4,8 +4,8 @@
 
 void My_HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 {
-  // Set pins 6 thru 9 to "General Output"
-  for (int i = 8; i <= 9; i++)
+  // Set pins 6 thru 7 to "General Output"
+  for (int i = 6; i <= 7; i++)
   {
     GPIOx->MODER |= (0b01 << 2 * i);
 
@@ -16,7 +16,7 @@ void My_HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 
   GPIOA->MODER &= ~(0b11 << 0);
   GPIOA->OSPEEDR &= ~(0b11 << 0);
-  GPIOA->PUPDR &= ~(0b10 << 0);
+  GPIOA->PUPDR |= (0b10 << 0);
 }
 
 /*
@@ -27,7 +27,14 @@ void My_HAL_GPIO_DeInit(GPIO_TypeDef  *GPIOx, uint32_t GPIO_Pin)
 
 GPIO_PinState My_HAL_GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
 {
-  return (GPIOx->IDR & GPIO_Pin) != 0;
+  if ((GPIOx->IDR & GPIO_Pin) == 0)
+  {
+    return GPIO_PIN_RESET;
+  }
+  else
+  {
+    return GPIO_PIN_SET;
+  }
 }
 
 void My_HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState)

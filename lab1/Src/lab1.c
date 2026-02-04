@@ -18,13 +18,14 @@ int main(void)
   SystemClock_Config();
 
   HAL_RCC_GPIOC_CLK_Enable();
+  HAL_RCC_GPIOA_CLK_Enable();
 
   GPIO_InitTypeDef initStr = {
       GPIO_PIN_8 | GPIO_PIN_9, GPIO_MODE_OUTPUT_PP, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL};
 
-  // HAL_GPIO_Init(GPIOC, &initStr);                     // Initialize pins PC8 & PC9
+  // HAL_GPIO_Init(GPIOC, &initStr); // Initialize pins PC8 & PC9
   My_HAL_GPIO_Init(GPIOC, &initStr);
-  My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); // Start PC8 high
+  My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Start PC8 high
 
   /* ~~~Exercise 1.1~~~:
   - GPIOC_MODEr bits to change:
@@ -51,21 +52,34 @@ int main(void)
 
   // ~~~Exercise 1.3~~~
   // PC8/9 are in output mode
-  uint32_t GPIOC_MODER_EXP = (0b01 << 2 * 8) | (0b01 << 2 * 9);
+  uint32_t GPIOC_MODER_EXP = (0b01 << 2 * 6) | (0b01 << 2 * 7);
   assert(GPIOC->MODER == GPIOC_MODER_EXP);
 
   // PC pullups aren't being used
   assert(GPIOC->PUPDR == 0);
 
   // Starts with PC8 turned on
-  uint32_t GPIOC_ODR_EXP = 1 << 8;
+  uint32_t GPIOC_ODR_EXP = 1 << 6;
   assert(GPIOC->ODR == GPIOC_ODR_EXP);
+
+  // GPIO_PinState buttonPinState = My_HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+  GPIO_PinState buttonPinState;
+  uint32_t buttonPinDebounceShifter = 0;
 
   while (1)
   {
-    HAL_Delay(200); // Delay 200ms
+    // HAL_Delay(200); // Delay 200ms
+    buttonPinDebounceShifter <<= 1;
+    buttonPinState = My_HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+    if (buttonPinState)
+    {
+      buttonPinDebounceShifter |= 1;
+    }
+    if (buttonPinDebounceShifter == 0x7fffffff)
+    {
+      My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6 | GPIO_PIN_7);
+    }
     // Toggle the output state of both PC8and PC9
-    My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8 | GPIO_PIN_9);
   }
 }
 
