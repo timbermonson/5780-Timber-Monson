@@ -1,6 +1,7 @@
 #include "main.h"
 #include "stm32f0xx_hal.h"
 #include <assert.h>
+#include "otherDefs.h"
 
 void SystemClock_Config(void);
 
@@ -15,7 +16,7 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-  __HAL_RCC_GPIOC_CLK_ENABLE();
+  HAL_RCC_GPIOC_CLK_Enable();
 
   GPIO_InitTypeDef initStr = {
       GPIO_PIN_8 | GPIO_PIN_9, GPIO_MODE_OUTPUT_PP, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL};
