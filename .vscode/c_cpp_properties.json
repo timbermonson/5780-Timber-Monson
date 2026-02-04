@@ -6,7 +6,7 @@
             "intelliSenseMode": "linux-gcc-x64",
             "cStandard": "c17",
             "cppStandard": "c++98",
-             "includePath": [
+            "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/Core/Inc",
                 "${workspaceFolder}/Drivers/STM32F0xx_HAL_Driver/Inc",
