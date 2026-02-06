@@ -22,6 +22,12 @@ void My_HAL_GPIO_InitUserBtn()
   GPIOA->PUPDR |= (0b10 << 0);
 }
 
+void My_HAL_GPIO_RegisterInterr_EXT0Rsng()
+{
+  EXTI->IMR |= 1 << 0;
+  EXTI->RTSR |= 1 << 0;
+}
+
 /*
 void My_HAL_GPIO_DeInit(GPIO_TypeDef  *GPIOx, uint32_t GPIO_Pin)
 {
