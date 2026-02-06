@@ -6,6 +6,13 @@
 
 void SystemClock_Config(void);
 
+void EXTI0_1_IRQHandler(void)
+{
+  My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+  My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
+  EXTI->PR = 1 << 0;
+}
+
 /**
  * @brief  The application entry point.
  * @retval int
@@ -29,7 +36,7 @@ int main(void)
   My_HAL_GPIO_InitUserBtn();
   My_HAL_GPIO_InitLEDs();
 
-  // Unmask the EXTI0 interrupt, and configure it to watch for a rising edge.
+  // Enable the EXTI0 interrupt, and configure it to watch for a rising edge.
   uint32_t IMR_ResetValue = 0x7F840000;
   assert(EXTI->IMR == IMR_ResetValue); // Reset values from specsheet
   assert(EXTI->RTSR == 0x00);
@@ -44,6 +51,10 @@ int main(void)
 
   // Start with one LED on
   My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+
+  // Enable the EXTI0 interrupt at the NVIC
+  NVIC_EnableIRQ(5);
+  NVIC_SetPriority(5, 1);
 
   while (1)
   {
