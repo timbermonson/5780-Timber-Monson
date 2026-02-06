@@ -2,6 +2,7 @@
 #include "stm32f0xx_hal.h"
 #include "otherDefs.h"
 #include "hal_gpio.h"
+#include <assert.h>
 
 void SystemClock_Config(void);
 
@@ -13,10 +14,35 @@ int main(void)
 {
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
+
   /* Configure the system clock */
   SystemClock_Config();
+
+  // Enable GPIO clocks
   HAL_RCC_GPIOC_CLK_Enable();
+  HAL_RCC_GPIOA_CLK_Enable();
+
+  // Enable SYSCFG Clock
+  HAL_RCC_SYSCFG_CLK_Enable();
+
+  // Config GPIO for LEDs and user button
+  My_HAL_GPIO_InitUserBtn();
   My_HAL_GPIO_InitLEDs();
+
+  // Unmask the EXTI0 interrupt, and configure it to watch for a rising edge.
+  uint32_t IMR_ResetValue = 0x7F840000;
+  assert(EXTI->IMR == IMR_ResetValue); // Reset values from specsheet
+  assert(EXTI->RTSR == 0x00);
+  My_HAL_GPIO_RegisterInterr_EXT0Rsng();
+  assert(EXTI->IMR == IMR_ResetValue + 1);
+  assert(EXTI->RTSR == 0x01);
+
+  // Set the EXTI0 interrupt multiplexer to PA0 (the user button).
+  assert(SYSCFG->EXTICR[0] == 0);
+  SYSCFG->EXTICR[0] &= ~(0b1111);
+  assert(SYSCFG->EXTICR[0] == 0);
+
+  // Start with one LED on
   My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
 
   while (1)
