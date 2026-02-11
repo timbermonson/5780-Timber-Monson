@@ -10,6 +10,16 @@ void EXTI0_1_IRQHandler(void)
 {
   My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
   My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
+
+  // Delay for measuring button => LED rise time.
+  // volatile long long i = 0;
+  // while (i < 1500000)
+  // {
+  //   i += 1;
+  // }
+
+  // My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+  // My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
   EXTI->PR = 1 << 0;
 }
 
