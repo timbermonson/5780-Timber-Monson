@@ -21,18 +21,18 @@ void RCC_TIM2_CLK_Enable(void)
   RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
 }
 
-void TIM2_SetPeriodVars(uint16_t prescale, uint16_t arr)
+void TIMx_SetPeriodVars(TIM_TypeDef *TIMx, uint16_t prescale, uint16_t arr)
 {
-  TIM2->PSC = prescale;
-  TIM2->ARR = arr;
+  TIMx->PSC = prescale;
+  TIMx->ARR = arr;
 }
 
-void TIM2_EnableUpdateInterr(void)
+void TIMx_EnableUpdateInterr(TIM_TypeDef *TIMx)
 {
-  TIM2->DIER |= TIM_DIER_UIE;
+  TIMx->DIER |= TIM_DIER_UIE;
 }
 
-void TIM2_Enable(void)
+void TIMx_Enable(TIM_TypeDef *TIMx)
 {
-  TIM2->CR1 |= TIM_CR1_CEN;
+  TIMx->CR1 |= TIM_CR1_CEN;
 }

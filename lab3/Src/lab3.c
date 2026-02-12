@@ -23,17 +23,18 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-  // Configure Timer 2
+  // Configure Timer clocks
   RCC_TIM2_CLK_Enable();
 
+  // Configure Timer 2
   const uint16_t arr = 1000;
   const int desiredHz = 4;
   const uint16_t prescale = (8000000 / (arr * desiredHz)) - 1;
-  TIM2_SetPeriodVars(prescale, arr);
+  TIMx_SetPeriodVars(TIM2, prescale, arr);
 
-  TIM2_EnableUpdateInterr();
+  TIMx_EnableUpdateInterr(TIM2);
 
-  TIM2_Enable();
+  TIMx_Enable(TIM2);
 
   // Configure GPIO
   RCC_GPIOC_CLK_Enable();
