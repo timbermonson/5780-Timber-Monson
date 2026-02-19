@@ -4,7 +4,7 @@
 
 void My_HAL_GPIO_InitLEDs()
 {
-  // Set pins 6 thru 7 to "General Lowspeed Output w/o pullups/downs"
+  // Set pins 6 thru 9 to "General Lowspeed Output w/o pullups/downs"
   for (int i = 6; i <= 9; i++)
   {
     GPIOC->MODER |= (0b01 << 2 * i);

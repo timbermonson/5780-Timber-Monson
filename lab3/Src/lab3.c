@@ -41,14 +41,30 @@ int main(void)
   TIMx_Enable(TIM2);
 
   // Configure Timer 3
-  TIMx_SetPrescaleArr(TIM3, prescaleFromArrHz(500, 800), 1000);
+  TIMx_SetPrescaleArr(TIM3, prescaleFromArrHz(1000, 800), 1000);
 
-  TIM3->CCMR1 &= ~((uint16_t)0b11); // Set capture/compare to output
-  TIM3->CCMR1 &= ~((uint16_t)0b11 << 8);
+  TIM3->CCMR1 &= (uint16_t)~(0b11 | 0b11 << 8); // Set capture/compare 1/2 to output
+
+  TIM3->CCMR1 &= (uint16_t)~(0b111 << 4 | 0b111 << 12); // Clear and set channel 1/2 PWM mode bits
+  TIM3->CCMR1 |= (uint16_t)(0b111 << 4 | 0b110 << 12);
+
+  TIM3->CCMR1 |= (uint16_t)(0b1 << 3 | 0b1 << 11); // Enable timer channel 1/2 preloads
+
+  TIM3->CCER |= (uint16_t)(0b1 << 0 | 0b1 << 4); // Enable channel 1/2 outputs
+
+  TIM3->CCR1 = (uint32_t)(200); // Set both channels to 20%
+  TIM3->CCR2 = (uint32_t)(200);
+  TIMx_Enable(TIM3);
 
   // Configure GPIO
   RCC_GPIOC_CLK_Enable();
   My_HAL_GPIO_InitLEDs();
+
+  GPIOC->MODER &= (uint32_t)~(0b11 << 12 | 0b11 << 14);
+  GPIOC->MODER |= (uint32_t)(0b10 << 12 | 0b10 << 14);
+
+  GPIOC->AFR[0] &= ~(uint32_t)(0b1111 << 24 | 0b1111 << 28);
+
   My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
   My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
 
@@ -58,7 +74,6 @@ int main(void)
   while (1)
   {
     HAL_Delay(500);
-    My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
   }
 
   return -1;
