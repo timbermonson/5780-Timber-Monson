@@ -21,7 +21,12 @@ void RCC_TIM2_CLK_Enable(void)
   RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
 }
 
-void TIMx_SetPeriodVars(TIM_TypeDef *TIMx, uint16_t prescale, uint16_t arr)
+void RCC_TIM3_CLK_Enable(void)
+{
+  RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
+}
+
+void TIMx_SetPrescaleArr(TIM_TypeDef *TIMx, uint16_t prescale, uint16_t arr)
 {
   TIMx->PSC = prescale;
   TIMx->ARR = arr;

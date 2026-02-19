@@ -12,6 +12,12 @@ void TIM2_IRQHandler(void)
   TIM2->SR &= ~((uint16_t)1);
 }
 
+uint16_t prescaleFromArrHz(uint16_t arr, unsigned int desiredHz)
+{
+  static const int baseFreq = 8000000;
+  return (baseFreq / (arr * desiredHz)) - 1;
+}
+
 /**
  * @brief  The application entry point.
  * @retval int
@@ -20,21 +26,25 @@ int main(void)
 {
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
+
   /* Configure the system clock */
   SystemClock_Config();
 
   // Configure Timer clocks
   RCC_TIM2_CLK_Enable();
+  RCC_TIM3_CLK_Enable();
 
   // Configure Timer 2
-  const uint16_t arr = 1000;
-  const int desiredHz = 4;
-  const uint16_t prescale = (8000000 / (arr * desiredHz)) - 1;
-  TIMx_SetPeriodVars(TIM2, prescale, arr);
+  TIMx_SetPrescaleArr(TIM2, prescaleFromArrHz(1000, 4), 1000);
 
   TIMx_EnableUpdateInterr(TIM2);
-
   TIMx_Enable(TIM2);
+
+  // Configure Timer 3
+  TIMx_SetPrescaleArr(TIM3, prescaleFromArrHz(500, 800), 1000);
+
+  TIM3->CCMR1 &= ~((uint16_t)0b11); // Set capture/compare to output
+  TIM3->CCMR1 &= ~((uint16_t)0b11 << 8);
 
   // Configure GPIO
   RCC_GPIOC_CLK_Enable();
