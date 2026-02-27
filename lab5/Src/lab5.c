@@ -67,10 +67,14 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-  // static const uint8_t i2cAddr = 0x6b;
+  static const uint8_t accelI2CAddr = 0x6b;
+  static const uint8_t accelWhoAmIAddr = 0x0f;
 
   Accel_Setup_I2CPins();
   Accel_Setup_I2C2Init();
+
+  uint8_t readBuf[8];
+  I2C_Read(I2C2, accelI2CAddr, accelWhoAmIAddr, 1, readBuf);
 
   while (1)
   {

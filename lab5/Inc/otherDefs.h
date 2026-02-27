@@ -20,3 +20,6 @@ void TIMx_Enable(TIM_TypeDef *TIMx);
 
 void I2C_Read(
     I2C_TypeDef *i2cPeriph, uint8_t devAddr, uint8_t regAddr, uint8_t numBytes, uint8_t *buf);
+
+void I2C_Write(
+    I2C_TypeDef *i2cPeriph, uint8_t devAddr, uint8_t regAddr, uint8_t numBytes, uint8_t *buf);

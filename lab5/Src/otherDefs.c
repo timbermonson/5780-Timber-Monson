@@ -130,3 +130,25 @@ void I2C_Read(
   // Release the bus
   i2cPeriph->CR2 |= I2C_CR2_STOP;
 }
+
+void I2C_Write(
+    I2C_TypeDef *i2cPeriph, uint8_t devAddr, uint8_t regAddr, uint8_t numBytes, uint8_t *buf)
+{
+  // Start a transaction to write the register address
+  I2C_StartTransaction(i2cPeriph, devAddr, numBytes + 1, 1);
+
+  // Send the address of the address to be written
+  I2C_WaitTXReady(i2cPeriph);
+  i2cPeriph->TXDR |= regAddr;
+
+  // Write out the buffer contents
+  for (int i = 0; i < numBytes; i++)
+  {
+    I2C_WaitTXReady(i2cPeriph);
+    i2cPeriph->TXDR |= buf[i];
+  }
+  I2C_WaitTComplete(I2C2);
+
+  // Release the bus
+  i2cPeriph->CR2 |= I2C_CR2_STOP;
+}
