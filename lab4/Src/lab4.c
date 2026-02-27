@@ -5,6 +5,68 @@
 #include "hal_gpio.h"
 
 void SystemClock_Config(void);
+void rxChar(USART_TypeDef *UartPeriph, char *c, int numChars);
+void txString(USART_TypeDef *UartPeriph, char *str);
+
+char prompt[] = "CMD?\r\n";
+
+void USART1_IRQHandler()
+{
+  char received[3];
+  rxChar(USART1, received, 2);
+  uint16_t pinToToggle;
+
+  int valid = 1;
+
+  switch (received[0])
+  {
+  case 'r':
+    txString(USART1, "LED r: ");
+    pinToToggle = GPIO_PIN_6;
+    break;
+  case 'b':
+    txString(USART1, "LED b: ");
+    pinToToggle = GPIO_PIN_7;
+    break;
+  case 'o':
+    txString(USART1, "LED o: ");
+    pinToToggle = GPIO_PIN_8;
+    break;
+  case 'g':
+    txString(USART1, "LED g: ");
+    pinToToggle = GPIO_PIN_9;
+    break;
+  default:
+    txString(USART1, "Invalid LED!\r\n");
+    valid = 0;
+    break;
+  }
+
+  if (valid)
+  {
+    switch (received[1])
+    {
+    case '0':
+      txString(USART1, "OFF\r\n");
+      My_HAL_GPIO_WritePin(GPIOC, pinToToggle, GPIO_PIN_RESET);
+      break;
+    case '1':
+      txString(USART1, "ON\r\n");
+      My_HAL_GPIO_WritePin(GPIOC, pinToToggle, GPIO_PIN_SET);
+      break;
+    case '2':
+      txString(USART1, "TOGGLE\r\n");
+      My_HAL_GPIO_TogglePin(GPIOC, pinToToggle);
+      break;
+    default:
+      txString(USART1, "Invalid LED Toggle!\r\n");
+      return;
+      break;
+    }
+  }
+
+  txString(USART1, prompt);
+}
 
 void USART1_Setup()
 {
@@ -25,8 +87,14 @@ void USART1_Setup()
   USART1->BRR &= (uint32_t)(0xffff0000);
   USART1->BRR |= (uint16_t)(HAL_RCC_GetHCLKFreq() / 115200);
 
-  // Enable Transmit/Receive, then UART peripheral.
+  // Enable Transmit/Receive, and Receive interrupt.
   USART1->CR1 |= USART_CR1_TE | USART_CR1_RE;
+
+  USART1->CR1 |= USART_CR1_RXNEIE;
+  NVIC_EnableIRQ(27);
+  NVIC_SetPriority(27, 1);
+
+  // Enable UART peripheral.
   USART1->CR1 |= USART_CR1_UE;
 }
 
@@ -47,13 +115,16 @@ void txString(USART_TypeDef *UartPeriph, char *str)
   }
 }
 
-void rxChar(USART_TypeDef *UartPeriph, char *c)
+void rxChar(USART_TypeDef *UartPeriph, char *c, int numChars)
 {
-  while ((UartPeriph->ISR & USART_ISR_RXNE) == 0)
+  for (int i = 0; i < numChars; i++)
   {
-  }
+    while ((UartPeriph->ISR & USART_ISR_RXNE) == 0)
+    {
+    }
 
-  *c = UartPeriph->RDR;
+    c[i] = UartPeriph->RDR;
+  }
 }
 
 /**
@@ -71,29 +142,10 @@ int main(void)
 
   RCC_GPIOC_CLK_Enable();
   My_HAL_GPIO_InitLEDs();
-  char received;
+  txString(USART1, prompt);
 
   while (1)
   {
-    rxChar(USART1, &received);
-    switch (received)
-    {
-    case 'r':
-      My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
-      break;
-    case 'b':
-      My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
-      break;
-    case 'o':
-      My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-      break;
-    case 'g':
-      My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
-      break;
-    default:
-      txString(USART1, "not recognized!\r\n");
-      break;
-    }
   }
   return -1;
 }
