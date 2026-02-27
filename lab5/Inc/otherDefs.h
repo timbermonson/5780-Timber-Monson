@@ -17,3 +17,6 @@ void RCC_I2C2_CLK_Enable(void);
 void TIMx_SetPrescaleArr(TIM_TypeDef *TIMx, uint16_t prescale, uint16_t arr);
 void TIMx_EnableUpdateInterr(TIM_TypeDef *TIMx);
 void TIMx_Enable(TIM_TypeDef *TIMx);
+
+void I2C_Read(
+    I2C_TypeDef *i2cPeriph, uint8_t devAddr, uint8_t regAddr, uint8_t numBytes, uint8_t *buf);
