@@ -119,7 +119,7 @@ int I2Cx_WaitRXReady(I2C_TypeDef *i2cPeriph)
 int I2Cx_Read(
     I2C_TypeDef *i2cPeriph, uint8_t devAddr, uint8_t regAddr, uint8_t numBytes, uint8_t *buf)
 {
-  I2Cx_StartTransaction(i2cPeriph, devAddr, numBytes, 1);
+  I2Cx_StartTransaction(i2cPeriph, devAddr, 1, 1);
 
   if (!I2Cx_WaitTXReady(i2cPeriph))
   {
@@ -158,17 +158,17 @@ void I2Cx_Write(
     I2C_TypeDef *i2cPeriph, uint8_t devAddr, uint8_t regAddr, uint8_t numBytes, uint8_t *buf)
 {
   // Start a transaction to write the register address
-  I2Cx_StartTransaction(i2cPeriph, devAddr, numBytes, 1);
+  I2Cx_StartTransaction(i2cPeriph, devAddr, numBytes + 1, 1);
 
   // Send the address of the address to be written
   I2Cx_WaitTXReady(i2cPeriph);
-  i2cPeriph->TXDR |= regAddr;
+  i2cPeriph->TXDR = regAddr;
 
   // Write out the buffer contents
   for (int i = 0; i < numBytes; i++)
   {
     I2Cx_WaitTXReady(i2cPeriph);
-    i2cPeriph->TXDR |= buf[i];
+    i2cPeriph->TXDR = buf[i];
   }
   I2Cx_WaitTComplete(I2C2);
 

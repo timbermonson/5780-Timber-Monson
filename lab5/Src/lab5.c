@@ -2,9 +2,13 @@
 #include "main.h"
 #include "stm32f072xb.h"
 #include "stm32f0xx_hal.h"
+#include "hal_gpio.h"
 #include "otherDefs.h"
 #include "stm32f0xx_hal_gpio.h"
 #include "stm32f0xx_hal_gpio_ex.h"
+#include <stdio.h>
+
+static const uint8_t accelI2CAddr = 0x69;
 
 void SystemClock_Config(void);
 
@@ -66,6 +70,25 @@ void Accel_Setup_I2C2Init()
   I2C2->CR1 |= (0b1 << I2C_CR1_PE_Pos);
 }
 
+void Accel_ReadVals(int16_t *X, int16_t *Y, int16_t *Z)
+{
+  static const uint8_t outReg_startAddr = 0x28 | 0b10000000;
+
+  uint8_t readBuf[6];
+  I2Cx_Read(I2C2, accelI2CAddr, outReg_startAddr, 6, readBuf);
+
+  *X = ((int16_t)readBuf[1] << 8) | readBuf[0];
+  *Y = ((int16_t)readBuf[3] << 8) | readBuf[2];
+  *Z = ((int16_t)readBuf[5] << 8) | readBuf[4];
+}
+
+void printVal(int16_t val)
+{
+  char strBuf[16];
+  snprintf(strBuf, 16, "%d\n\r", val);
+  UARTx_TXString(USART1, strBuf);
+}
+
 /**
  * @brief  The application entry point.
  * @retval int
@@ -76,23 +99,54 @@ int main(void)
   HAL_Init();
   /* Configure the system clock */
   SystemClock_Config();
-
-  static const uint8_t accelI2CAddr = 0x69;
   static const uint8_t accelWhoAmIAddr = 0x0f;
 
   USART1_Setup();
-  UARTx_TXString(USART1, "Hello World!\r\n");
   Accel_Setup_I2CPins();
   Accel_Setup_I2C2Init();
+  My_HAL_GPIO_InitLEDs();
 
-  uint8_t readBuf[8];
+  UARTx_TXString(USART1, "Hello World!\r\n");
+
+  uint8_t readBuf[1];
   I2Cx_Read(I2C2, accelI2CAddr, accelWhoAmIAddr, 1, readBuf);
+
+  UARTx_TXString(USART1, "Accel. \"Whoami\" byte: ");
   UARTx_TXBytes(USART1, readBuf, 1);
 
+  // Set to 200Hz data capture rate w/ 12.5Hz cutoff
+  uint8_t writeBuf[1];
+  writeBuf[0] = 0b01001111;
+  I2Cx_Write(I2C2, accelI2CAddr, 0x20, 1, writeBuf);
+
+  writeBuf[0] = 0b00000010;
+  I2Cx_Write(I2C2, accelI2CAddr, 0x24, 1, writeBuf);
+
+  int16_t X_0, Y_0, Z_0;
+  Accel_ReadVals(&X_0, &Y_0, &Z_0);
+
+  int16_t X, Y, Z;
   while (1)
   {
-    // UARTx_TXString(USART1, ".\r\n");
-    HAL_Delay(1000);
+    Accel_ReadVals(&X, &Y, &Z);
+    int16_t threshold = 4000;
+    X -= X_0;
+    Y -= Y_0;
+    Z -= Z_0;
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, X < -threshold);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, X > threshold);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, Y < -threshold);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, Y > threshold);
+
+    // UARTx_TXString(USART1, "\r\n-----------------\r\n");
+    // UARTx_TXString(USART1, "X reading: ");
+    // printVal(X);
+    // UARTx_TXString(USART1, "Y reading: ");
+    // printVal(Y);
+    // UARTx_TXString(USART1, "Z reading: ");
+    // printVal(Z);
+
+    HAL_Delay(100);
   }
   return -1;
 }
