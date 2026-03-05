@@ -1,7 +1,10 @@
+#include "Legacy/stm32_hal_legacy.h"
 #include "main.h"
 #include "stm32f072xb.h"
 #include "stm32f0xx_hal.h"
 #include "otherDefs.h"
+#include "stm32f0xx_hal_gpio.h"
+#include "stm32f0xx_hal_gpio_ex.h"
 
 void SystemClock_Config(void);
 
@@ -11,34 +14,41 @@ void Accel_Setup_I2CPins()
   RCC_GPIOB_CLK_Enable();
   RCC_GPIOC_CLK_Enable();
 
+  // Set up I2C-select and address-select pins
+  GPIO_InitTypeDef addrPin;
+  addrPin.Pin = GPIO_PIN_14;
+  addrPin.Mode = GPIO_MODE_OUTPUT_PP;
+  addrPin.Pull = GPIO_NOPULL;
+  addrPin.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &addrPin);
+
+  GPIO_InitTypeDef selPin;
+  selPin.Pin = GPIO_PIN_0;
+  selPin.Mode = GPIO_MODE_OUTPUT_PP;
+  selPin.Pull = GPIO_NOPULL;
+  selPin.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &selPin);
+
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
+
   // Set up SDA pin (PB11)
-  GPIOB->MODER &= ~(GPIO_MODER_MODER11_Msk);
-  GPIOB->MODER |= (0b10 << GPIO_MODER_MODER11_Pos);
-
-  GPIOB->OTYPER |= (0b1 << 11);
-
-  GPIOB->AFR[1] &= ~(0b1111 << GPIO_AFRH_AFSEL11_Pos);
-  GPIOB->AFR[1] |= (0b0001 << GPIO_AFRH_AFSEL11_Pos);
+  GPIO_InitTypeDef sdaConfig;
+  sdaConfig.Pin = GPIO_PIN_11;
+  sdaConfig.Mode = GPIO_MODE_AF_OD;
+  sdaConfig.Pull = GPIO_NOPULL;
+  sdaConfig.Speed = GPIO_SPEED_FREQ_LOW;
+  sdaConfig.Alternate = GPIO_AF1_I2C2;
+  HAL_GPIO_Init(GPIOB, &sdaConfig);
 
   // Set up SCL pin (PB13)
-  GPIOB->MODER &= ~(GPIO_MODER_MODER13_Msk);
-  GPIOB->MODER |= (0b10 << GPIO_MODER_MODER13_Pos);
-
-  GPIOB->OTYPER |= (0b1 << 13);
-
-  GPIOB->AFR[1] &= ~(0b1111 << GPIO_AFRH_AFSEL13_Pos);
-  GPIOB->AFR[1] |= (0b0101 << GPIO_AFRH_AFSEL13_Pos);
-
-  // Set up I2C-select and address-select pins
-  GPIOB->MODER &= ~(GPIO_MODER_MODER14_Msk);
-  GPIOB->MODER |= (0b01 << GPIO_MODER_MODER14_Pos);
-  GPIOB->OTYPER &= ~(0b1 << 14);
-  GPIOB->ODR |= (0b1 << 14);
-
-  GPIOC->MODER &= ~(GPIO_MODER_MODER0_Msk);
-  GPIOC->MODER |= (0b01 << GPIO_MODER_MODER0_Pos);
-  GPIOC->OTYPER &= ~(0b1 << 0);
-  GPIOC->ODR |= (0b1 << 0);
+  GPIO_InitTypeDef sclConfig;
+  sclConfig.Pin = GPIO_PIN_13;
+  sclConfig.Mode = GPIO_MODE_AF_OD;
+  sclConfig.Pull = GPIO_NOPULL;
+  sclConfig.Speed = GPIO_SPEED_FREQ_LOW;
+  sclConfig.Alternate = GPIO_AF5_I2C2;
+  HAL_GPIO_Init(GPIOB, &sclConfig);
 }
 
 void Accel_Setup_I2C2Init()
@@ -67,17 +77,22 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-  static const uint8_t accelI2CAddr = 0x6b;
+  static const uint8_t accelI2CAddr = 0x69;
   static const uint8_t accelWhoAmIAddr = 0x0f;
 
+  USART1_Setup();
+  UARTx_TXString(USART1, "Hello World!\r\n");
   Accel_Setup_I2CPins();
   Accel_Setup_I2C2Init();
 
   uint8_t readBuf[8];
-  I2C_Read(I2C2, accelI2CAddr, accelWhoAmIAddr, 1, readBuf);
+  I2Cx_Read(I2C2, accelI2CAddr, accelWhoAmIAddr, 1, readBuf);
+  UARTx_TXBytes(USART1, readBuf, 1);
 
   while (1)
   {
+    // UARTx_TXString(USART1, ".\r\n");
+    HAL_Delay(1000);
   }
   return -1;
 }

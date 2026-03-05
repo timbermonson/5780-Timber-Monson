@@ -18,8 +18,13 @@ void TIMx_SetPrescaleArr(TIM_TypeDef *TIMx, uint16_t prescale, uint16_t arr);
 void TIMx_EnableUpdateInterr(TIM_TypeDef *TIMx);
 void TIMx_Enable(TIM_TypeDef *TIMx);
 
-void I2C_Read(
+void USART1_Setup();
+void UARTx_TXBytes(USART_TypeDef *UartPeriph, uint8_t *data, unsigned int numBytes);
+void UARTx_TXString(USART_TypeDef *UartPeriph, char *str);
+void UARTx_TXReg(USART_TypeDef *UartPeriph, uint32_t reg);
+
+int I2Cx_Read(
     I2C_TypeDef *i2cPeriph, uint8_t devAddr, uint8_t regAddr, uint8_t numBytes, uint8_t *buf);
 
-void I2C_Write(
+void I2Cx_Write(
     I2C_TypeDef *i2cPeriph, uint8_t devAddr, uint8_t regAddr, uint8_t numBytes, uint8_t *buf);
