@@ -15,6 +15,7 @@ void RCC_TIM3_CLK_Enable(void);
 void RCC_I2C2_CLK_Enable(void);
 
 void RCC_ADC_CLK_Enable(void);
+void RCC_DAC_CLK_Enable(void);
 
 void TIMx_SetPrescaleArr(TIM_TypeDef *TIMx, uint16_t prescale, uint16_t arr);
 void TIMx_EnableUpdateInterr(TIM_TypeDef *TIMx);

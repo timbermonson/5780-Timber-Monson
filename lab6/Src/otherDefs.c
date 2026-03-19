@@ -7,6 +7,11 @@ void RCC_ADC_CLK_Enable(void)
   RCC->APB2ENR |= RCC_APB2ENR_ADCEN;
 }
 
+void RCC_DAC_CLK_Enable(void)
+{
+  RCC->APB1ENR |= RCC_APB1ENR_DACEN;
+}
+
 void RCC_GPIOC_CLK_Enable(void)
 {
   RCC->AHBENR |= RCC_AHBENR_GPIOCEN;

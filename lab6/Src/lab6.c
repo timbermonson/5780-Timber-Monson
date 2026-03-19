@@ -7,9 +7,19 @@
 
 void SystemClock_Config(void);
 
+const uint8_t sine_table[32] = {127, 151, 175, 197, 216, 232, 244, 251, 254, 251, 244,
+                                232, 216, 197, 175, 151, 127, 102, 78,  56,  37,  21,
+                                9,   2,   0,   2,   9,   21,  37,  56,  78,  102};
+
+void configDAC()
+{
+  DAC1->CR |= DAC_CR_EN1;
+  DAC1->CR |= DAC_CR_TEN1;
+  DAC1->CR |= 0b111 << DAC_CR_TSEL1_Pos; // Configure for software Trigger
+}
+
 void configADC()
 {
-  ADC1->CFGR1 = 0;
   ADC1->CFGR1 |= 0b10 << ADC_CFGR1_RES_Pos; // 8-Bit Resolution
   ADC1->CFGR1 |= ADC_CFGR1_CONT;            // Continuous Measurement
 
@@ -24,6 +34,16 @@ void configADC()
   ADC1->CR |= ADC_CR_ADSTART;
 }
 
+void doADCFunc()
+{
+  const int adcMax = 0xff;
+  uint16_t adcData = ADC1->DR & ADC_DR_DATA;
+  My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, adcData > 1 * (adcMax / 5));
+  My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, adcData > 2 * (adcMax / 5));
+  My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, adcData > 3 * (adcMax / 5));
+  My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, adcData > 4 * (adcMax / 5));
+}
+
 /**
  * @brief  The application entry point.
  * @retval int
@@ -36,23 +56,33 @@ int main(void)
   SystemClock_Config();
 
   RCC_GPIOC_CLK_Enable();
+  RCC_GPIOA_CLK_Enable();
+  RCC_DAC_CLK_Enable();
   My_HAL_GPIO_InitLEDs();
 
   GPIOC->PUPDR &= ~GPIO_PUPDR_PUPDR0_Msk;
   GPIOC->MODER |= GPIO_MODER_MODER0_Msk;
-
   RCC_ADC_CLK_Enable();
-
   configADC();
 
-  const int adcMax = 0xff;
+  GPIOA->PUPDR &= ~GPIO_PUPDR_PUPDR4_Msk;
+  GPIOA->MODER |= GPIO_MODER_MODER4_Msk;
+
+  configDAC();
+
+  int waveIndex = 0;
   while (1)
   {
-    uint16_t adcData = ADC1->DR & ADC_DR_DATA;
-    My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, adcData > 1 * (adcMax / 5));
-    My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, adcData > 2 * (adcMax / 5));
-    My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, adcData > 3 * (adcMax / 5));
-    My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, adcData > 4 * (adcMax / 5));
+    // doADCFunc() // Uncomment for checkoff 1
+    if (waveIndex == 32)
+      waveIndex = 0;
+
+    DAC1->DHR8RD = sine_table[waveIndex];
+    DAC1->SWTRIGR |= DAC_SWTRIGR_SWTRIG1;
+
+    waveIndex++;
+    HAL_Delay(0); // For some reason, a 1ms delay is turning into 2ms. delay(0) gives the proper 1ms
+                  // delay.
   }
   return -1;
 }
